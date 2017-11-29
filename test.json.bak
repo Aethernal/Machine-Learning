@@ -1,0 +1,30 @@
+{
+  "data": [
+    {
+      "article_number": 1,
+      "brand": "CRYSTAL COLORS",
+      "reference": "0/3PUCES",
+      "typologie": null,
+      "description": "Parure \"Puces Crystal, Fuchsia et Hématite\" Swarovski Elements",
+      "colorname": null,
+      "colorcode": null,
+      "size": "",
+      "cup": null,
+      "legsize": null,
+      "ean": "3662483451242",
+      "model": null,
+      "collection": null,
+      "genre": null,
+      "referenceyear": null,
+      "weight": null,
+      "length": null,
+      "width": null,
+      "height": null,
+      "composition": "Argent 925+Swarovski",
+      "capacity": null,
+      "category": "PARURE",
+      "categorycode": "11562",
+      "pcb": null
+    }
+	]
+}

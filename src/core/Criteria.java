@@ -1,13 +1,15 @@
 package core;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Criteria implements Serializable {
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class Criteria {
 	private String name;
 	private double weight;
-	private List<SpecValue> values;
+	protected List<SpecValue> values;
 
 	public Criteria(String name, double weight) {
 		this.name = name;
@@ -28,8 +30,10 @@ public class Criteria implements Serializable {
 
 	public double getValueConsistency(String value) {
 		double consistency = 0;
-		consistency += getSpecValue(value).getWeight();
-
+		if(getSpecValue(value) != null){
+			consistency += getSpecValue(value).getWeight();
+		}
+		
 		consistency = consistency / sumValuesWeight();
 		return consistency;
 	}
@@ -94,4 +98,29 @@ public class Criteria implements Serializable {
 		this.weight = Math.max(Config.weight_modifier,Math.min(1, weight));
 	}
 
+	public JSONObject toJSON(){
+		JSONObject obj = new JSONObject();
+		obj.put("name", name);
+		obj.put("weight", weight);
+		
+		for(SpecValue v : values){
+			obj.append("values", v.toJSON());
+		}
+		
+		return obj;
+	}
+	
+	public static Criteria parseJSON(JSONObject json){
+		String name = json.getString("name");
+		double weight = json.getDouble("weight");
+		Criteria c = new Criteria(name, weight);
+		JSONArray values = json.getJSONArray("values");
+		JSONObject obj;
+		for(int i = 0; i < values.length(); i++){
+			obj = values.getJSONObject(i);
+			c.values.add(SpecValue.parseJSON(obj));
+		}
+		return c;
+	}
+	
 }

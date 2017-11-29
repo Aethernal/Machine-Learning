@@ -1,8 +1,6 @@
 package core;
 
-import java.io.Serializable;
-
-public class Spec implements Serializable {
+public class Spec {
 	private String name;
 	private String value;
 	

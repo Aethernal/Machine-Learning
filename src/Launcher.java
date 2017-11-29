@@ -1,45 +1,47 @@
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import core.Article;
 import core.MatchEngine;
+import core.Spec;
+import core.Tag;
 
 public class Launcher {
-	private MatchEngine engine;
+	private static MatchEngine engine;
 
-	public static void main(int argc, String[] args) {
-		MatchEngine engine;
-		File instance = new File("MatchEngine.ser");
-		if (instance.exists()) {
-			try {
-				ObjectInputStream stream = new ObjectInputStream(new FileInputStream(instance));
-				engine = (MatchEngine) stream.readObject();
-			} catch (IOException | ClassNotFoundException e) {
-				System.err.println("Could not load MatchEngine instance");
-			}
-		} else {
-			engine = new MatchEngine();
-		}
-		if (argc > 1) {
-			switch (args[1]) {
+	public static void main(String args[]) {
+		engine = new MatchEngine();
+		
+		if (args.length > 1) {
+			switch (args[0]) {
 			case "train":
-				train(args[2]);
+				train(args[1]);
 				break;
 			case "test":
-				test(args[2]);
+				test(args[1]);
 				break;
 			default:
 				System.err.println("Invalid action ! should be test or train !");
 				break;
 			}
 		} else {
-			if (args[1].equals("help")) {
+			
+			if (args.length == 1 && args[0].equals("help")) {
 				help();
 			} else {
 				System.err.println("Missing arguments ! < test | train > <file>");
 			}
 		}
+		
+		engine.saveData();
 	}
 
 	private static File checkFile(String path) {
@@ -51,17 +53,81 @@ public class Launcher {
 		return null;
 	}
 
+	private static JSONArray readJSON(File file){
+		BufferedReader reader;
+		try {
+			reader = new BufferedReader(new FileReader(file));
+			String json = "";
+			String tmp;
+			while((tmp = reader.readLine()) != null){
+				json += tmp;
+			}
+			reader.close();
+			JSONArray data = new JSONObject(json).getJSONArray("data");
+			
+			return data;
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		return null;
+	}
+	
 	private static void train(String path) {
 		File file;
 		if ((file = checkFile(path)) != null) {
-			//TODO
+			JSONArray data = readJSON(file);
+			JSONObject article_json;
+			for(int i = 0; i < data.length(); i++){
+				if(i%100==99)
+				System.out.println("learning from item n° " + (i + 1) +" of " + data.length());
+				article_json = data.getJSONObject(i);
+				Article article = new Article(article_json);
+				engine.addDataSet(article, article_json.getString("category"));
+			}
 		}
 	}
 
 	private static void test(String path) {
 		File file;
 		if ((file = checkFile(path)) != null) {
-			//TODO
+			JSONArray data = readJSON(file);
+			JSONObject article_json;
+			double correct = 0.0;
+			for(int i = 0; i < data.length(); i++){
+				article_json = data.getJSONObject(i);
+				Article article = new Article(article_json);
+				Tag best = engine.match(article);
+				if(best.getName().equals(article_json.getString("category"))){
+					correct++;
+					best.updateTag(article);
+				} else {
+					//show error
+					Tag correct_tag = engine.getTag(article_json.getString("category"));
+					System.out.println("best tag found = " + best.getName() + " " +best.getConsistency(article)+ " correct was " + article_json.getString("category") + " " + correct_tag.getConsistency(article) +"" );
+					
+					System.out.println(best.getName());
+					for(Spec s : article.getSpecs()){
+						if(best.getCriteria(s.getName()) != null){
+							System.out.println("\t"+s.getName() + " : " + best.getCriteria(s.getName()).getWeight() );
+							System.out.println("\t\t"+s.getValue() + " : " + best.getCriteria(s.getName()).getValueConsistency(s.getValue()) );
+						}
+					}
+					
+					System.out.println(correct_tag.getName());
+					for(Spec s : article.getSpecs()){
+						if(correct_tag.getCriteria(s.getName()) != null){
+							System.out.println("\t"+s.getName() + " : " + correct_tag.getCriteria(s.getName()).getWeight() );
+							System.out.println("\t\t"+s.getValue() + " : " + correct_tag.getCriteria(s.getName()).getValueConsistency(s.getValue()) );
+						}
+					}
+				}
+				if(i%100==99)
+					System.out.println("matched item n° " + (i + 1) +" of " + data.length());
+				
+				
+			}
+			System.out.println("Number of correct match " + correct + " of " + data.length() +" | " + (correct / data.length() * 100.0) + "%");
 		}
 	}
 

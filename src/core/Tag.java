@@ -81,17 +81,15 @@ public class Tag implements Serializable {
 		Criteria c;
 		List<Criteria> tmp = new ArrayList<Criteria>();
 		List<Criteria> unused;
-		
+
 		for (Spec s : article.getSpecs()) {
-	
 			if ((c = getCriteria(s.getName())) != null) {
 				tmp.add(c);
-			} else {
-				addSpec(s);
+				
 			}
-	
-		}
+			addSpec(s);
 		
+		}
 		unused = new ArrayList<Criteria>(crits);
 		unused.removeAll(tmp);
 		

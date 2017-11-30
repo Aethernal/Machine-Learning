@@ -102,12 +102,12 @@ public class Tag {
 		for (Spec s : article.getSpecs()) {
 			if ((c = getCriteria(s.getName())) != null) {
 				
-				//erroding other values
-				for(SpecValue value : c.getValues()){
-					if(value.getValue() != s.getValue()){
-						c.dropValue(value.getValue());
-					}
-				}
+//				//erroding other values
+//				for(SpecValue value : c.getValues()){
+//					if(!value.getValue().equals(s.getValue())){
+//						c.dropValue(value.getValue());
+//					}
+//				}
 				
 				tmp.add(c);
 			}

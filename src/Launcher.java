@@ -109,7 +109,7 @@ public class Launcher {
 //						showTagConsistency(correct_tag, article);
 						
 						correct_tag.updateTag(article);
-//						best.dropArticle(article);
+						best.dropArticle(article);
 						
 					}
 					

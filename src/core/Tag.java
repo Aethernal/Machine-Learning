@@ -55,12 +55,6 @@ public class Tag {
 			crit = getCriteria(spec.getName());
 			crit.addValue(spec.getValue());
 		}
-		// drop others values
-		for (SpecValue v : crit.getValues()) {
-			if (!v.getValue().equals(spec.getValue())) {
-				crit.dropValue(v.getValue());
-			}
-		}
 
 	}
 
@@ -97,10 +91,6 @@ public class Tag {
 				delta = Config.weight_modifier / 10 * 5; 
 			}
 			crit.setWeight(crit.getWeight() - delta);
-			for(SpecValue v : crit.getValues()){
-				crit.dropValue(v.getValue());
-			}
-			
 		}
 	}
 
@@ -111,15 +101,24 @@ public class Tag {
 
 		for (Spec s : article.getSpecs()) {
 			if ((c = getCriteria(s.getName())) != null) {
+				
+				//erroding other values
+				for(SpecValue value : c.getValues()){
+					if(value.getValue() != s.getValue()){
+						c.dropValue(value.getValue());
+					}
+				}
+				
 				tmp.add(c);
 			}
 			addSpec(s);
-
+			
+			
 		}
 		unused = new ArrayList<Criteria>(crits);
 		unused.removeAll(tmp);
 		
-		//erroding
+		//erroding unused criteria
 		for (Criteria t : unused) {
 			dropSpec(t);
 		}
@@ -128,15 +127,14 @@ public class Tag {
 
 	public double getConsistency(Article article) {
 		Criteria c;
-		double valueConsistency;
+		double valueConsistency = 0;
 		double consistency = 0;
 		for (Spec s : article.getSpecs()) {
 
 			if ((c = getCriteria(s.getName())) != null) {
-				valueConsistency = c.getValueConsistency(s.getValue());
+				valueConsistency += c.getValueConsistency(s.getValue());
 				if(valueConsistency != 0){
-					consistency += c.getWeight()  * (1 - c.getValueConsistency(s.getValue()));
-					
+					consistency += c.getWeight()  * (valueConsistency);
 				}
 			}
 			

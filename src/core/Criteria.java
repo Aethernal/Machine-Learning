@@ -70,11 +70,11 @@ public class Criteria {
 		if(v != null){
 			double delta = 1;
 			if(v.getWeight() / sumValuesWeight() <= 0.3){
-				delta = Config.weight_modifier / 10; 
+				delta = Config.weight_modifier / 100; 
 			} else if (v.getWeight() / sumValuesWeight() <= 0.7){
-				delta = Config.weight_modifier / 10 * 2.5; 
+				delta = Config.weight_modifier / 100 * 25; 
 			} else {
-				delta = Config.weight_modifier / 10 * 5; 
+				delta = Config.weight_modifier / 100 * 50; 
 			}
 			v.setWeight(v.getWeight() - delta);
 		}

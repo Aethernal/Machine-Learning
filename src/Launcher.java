@@ -1,10 +1,7 @@
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.text.DecimalFormat;
 
 import org.json.JSONArray;
@@ -106,13 +103,13 @@ public class Launcher {
 					} else {
 						//show error
 						Tag correct_tag = engine.getTag(article_json.getString("category"));
-//						System.out.println("best tag found = " + best.getName() + " " +best.getConsistency(article)+ " correct was " + article_json.getString("category") + " " + correct_tag.getConsistency(article) +"" );
+//						System.out.println("best tag found " + best.getName() + " " + best.getConsistency(article) + " correct was " + article_json.getString("category") + " " + correct_tag.getConsistency(article) +"" );
 						
-//						showTagConsistency(best, article);
+//						showTagConsistency(best, correct_tag, article);
 //						showTagConsistency(correct_tag, article);
 						
 						correct_tag.updateTag(article);
-						best.dropArticle(article);
+//						best.dropArticle(article);
 						
 					}
 					
@@ -126,13 +123,19 @@ public class Launcher {
 		}
 	}
 
-	private static void showTagConsistency(Tag t, Article article){
+	private static void showTagConsistency(Tag t1, Tag t2, Article article){
 		DecimalFormat format = new DecimalFormat("#0.00");
-		System.out.println(t.getName());
+		System.out.println(t1.getName());
 		for(Spec s : article.getSpecs()){
-			if(t.getCriteria(s.getName()) != null){
-				System.out.println("\t"+s.getName() + " : " + format.format(t.getCriteria(s.getName()).getWeight() / t.getWeightSum() * 100) +"%");
-				System.out.println("\t\t"+s.getValue() + " : " + format.format(t.getCriteria(s.getName()).getValueConsistency(s.getValue())*100) +"%");
+			if(t1.getCriteria(s.getName()) != null){
+				double t1_crit_weight = t1.getCriteria(s.getName()).getWeight() / t1.getWeightSum() * 100;
+				double t2_crit_weight = t2.getCriteria(s.getName()).getWeight() / t2.getWeightSum() * 100;
+				double t1_value_weight = t1.getCriteria(s.getName()).getValueConsistency(s.getValue()) * 100;
+				double t2_value_weight = t2.getCriteria(s.getName()).getValueConsistency(s.getValue()) * 100;
+				
+				System.out.println("\t"+s.getName() + " : " + format.format(t1_crit_weight) +"%" + " VS " + format.format(t2_crit_weight) +"% ");
+				System.out.println("\tResult: " + format.format(t1_crit_weight * (t1_value_weight / 100)) + " VS " + format.format(t2_crit_weight * (t2_value_weight / 100)));
+				System.out.println("\t\t"+s.getValue() + " : " + format.format(t1_value_weight) +"%" + " VS " + format.format(t2_value_weight) +"%");
 			}
 		}
 	}

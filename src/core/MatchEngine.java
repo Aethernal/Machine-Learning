@@ -67,11 +67,10 @@ public class MatchEngine {
 
 	public Tag match(Article article) {
 		Tag tag = null;
-		double highest = 0, tmp;
+		double highest = -1, tmp;
 
 		for (Tag t : tags) {
 			tmp = t.getConsistency(article);
-			DecimalFormat f = new DecimalFormat("##.00");
 			if (tmp > highest) {
 				tag = t;
 				highest = tmp;

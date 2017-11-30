@@ -50,16 +50,16 @@ public class Criteria {
 
 	public void addValue(String value) {
 		SpecValue v;
-		int delta = 1;
+		double delta = 1;
 		if ((v = getSpecValue(value)) != null) {
-			if(v.getWeight() <= 0.3){
-				delta = 1;
-			} else if (v.getWeight() <= 0.7){
-				delta = 2;
+			if(v.getWeight() / sumValuesWeight() <= 0.3){
+				delta = Config.weight_modifier / 10 * 5; 
+			} else if (v.getWeight() / sumValuesWeight() <= 0.7){
+				delta = Config.weight_modifier / 10 * 2.5; 
 			} else {
-				delta = 3;
+				delta = Config.weight_modifier / 10; 
 			}
-			v.setWeight(v.getWeight() + Config.weight_modifier / delta);
+			v.setWeight(v.getWeight() + delta);
 		} else {
 			values.add(new SpecValue(value, Config.weight_modifier));
 		}
@@ -67,15 +67,17 @@ public class Criteria {
 
 	public void dropValue(String value){
 		SpecValue v = getSpecValue(value);
-		int delta = 1;
-		if(v.getWeight() <= 0.3){
-			delta = 3;
-		} else if (v.getWeight() <= 0.7){
-			delta = 2;
-		} else {
-			delta = 1;
+		if(v != null){
+			double delta = 1;
+			if(v.getWeight() / sumValuesWeight() <= 0.3){
+				delta = Config.weight_modifier / 10; 
+			} else if (v.getWeight() / sumValuesWeight() <= 0.7){
+				delta = Config.weight_modifier / 10 * 2.5; 
+			} else {
+				delta = Config.weight_modifier / 10 * 5; 
+			}
+			v.setWeight(v.getWeight() - delta);
 		}
-		v.setWeight(v.getWeight() - Config.weight_modifier / delta);
 	}
 	
 	public String getName() {
@@ -95,7 +97,7 @@ public class Criteria {
 	}
 
 	public void setWeight(double weight) {
-		this.weight = Math.max(Config.weight_modifier,Math.min(1, weight));
+		this.weight = Math.max(Config.weight_modifier,weight);
 	}
 
 	public JSONObject toJSON(){

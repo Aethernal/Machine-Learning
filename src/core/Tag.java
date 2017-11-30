@@ -25,7 +25,7 @@ public class Tag {
 		return null;
 	}
 
-	private double getWeightSum() {
+	public double getWeightSum() {
 		double sum = 0;
 		for (Criteria c : crits) {
 			sum += c.getWeight();
@@ -39,23 +39,22 @@ public class Tag {
 
 	public void addSpec(Spec spec) {
 		Criteria crit;
-		int delta = 1;
+		double delta = 1;
 		if ((crit = getCriteria(spec.getName())) != null) {
-			if (crit.getWeight() <= 0.3) {
-				delta = 1;
-			} else if (crit.getWeight() <= 0.7) {
-				delta = 2;
+			if (crit.getWeight() / getWeightSum() <= 0.3) {
+				delta = Config.weight_modifier / 10 * 5;
+			} else if (crit.getWeight() / getWeightSum() <= 0.7) {
+				delta = Config.weight_modifier / 10 * 2.5;
 			} else {
-				delta = 3;
+				delta = Config.weight_modifier / 10;
 			}
-			crit.setWeight(crit.getWeight() + Config.weight_modifier / delta);
+			crit.setWeight(crit.getWeight() + delta);
 			crit.addValue(spec.getValue());
 		} else {
 			crits.add(new Criteria(spec.getName(), Config.weight_modifier));
 			crit = getCriteria(spec.getName());
 			crit.addValue(spec.getValue());
 		}
-
 		// drop others values
 		for (SpecValue v : crit.getValues()) {
 			if (!v.getValue().equals(spec.getValue())) {
@@ -67,22 +66,41 @@ public class Tag {
 
 	public void dropArticle(Article article) {
 		for (Spec s : article.getSpecs()) {
-			dropSpec(s.getName());
+			dropSpec(s);
 		}
 	}
 
-	public void dropSpec(String name) {
-		Criteria crit = getCriteria(name);
+	public void dropSpec(Spec s) {
+		Criteria crit = getCriteria(s.getName());
 		if (crit != null) {
-			int delta = 1;
-			if (crit.getWeight() <= 0.3) {
-				delta = 3;
-			} else if (crit.getWeight() <= 0.7) {
-				delta = 2;
+			double delta = 1;
+			if (crit.getWeight() / getWeightSum() <= 0.3) {
+				delta = Config.weight_modifier / 10; 
+			} else if (crit.getWeight() / getWeightSum() <= 0.7) {
+				delta = Config.weight_modifier / 10 * 2.5;
 			} else {
-				delta = 1;
+				delta = Config.weight_modifier / 10 * 5; 
 			}
-			crit.setWeight(crit.getWeight() - Config.weight_modifier / delta);
+			crit.setWeight(crit.getWeight() - delta);
+			crit.dropValue(s.getValue());
+		}
+	}
+	
+	public void dropSpec(Criteria crit) {
+		if (crit != null) {
+			double delta = 1;
+			if (crit.getWeight() / getWeightSum() <= 0.3) {
+				delta = Config.weight_modifier / 10; 
+			} else if (crit.getWeight() / getWeightSum() <= 0.7) {
+				delta = Config.weight_modifier / 10 * 2.5; 
+			} else {
+				delta = Config.weight_modifier / 10 * 5; 
+			}
+			crit.setWeight(crit.getWeight() - delta);
+			for(SpecValue v : crit.getValues()){
+				crit.dropValue(v.getValue());
+			}
+			
 		}
 	}
 
@@ -94,16 +112,16 @@ public class Tag {
 		for (Spec s : article.getSpecs()) {
 			if ((c = getCriteria(s.getName())) != null) {
 				tmp.add(c);
-
 			}
 			addSpec(s);
 
 		}
 		unused = new ArrayList<Criteria>(crits);
 		unused.removeAll(tmp);
-
+		
+		//erroding
 		for (Criteria t : unused) {
-			dropSpec(t.getName());
+			dropSpec(t);
 		}
 
 	}
@@ -117,14 +135,12 @@ public class Tag {
 			if ((c = getCriteria(s.getName())) != null) {
 				valueConsistency = c.getValueConsistency(s.getValue());
 				if(valueConsistency != 0){
-					consistency += c.getWeight() - (c.getWeight() / 2) * (c.getValueConsistency(s.getValue()));
-				} else {
-					consistency += c.getWeight() - (c.getWeight() / 2);
+					consistency += c.getWeight()  * (1 - c.getValueConsistency(s.getValue()));
+					
 				}
 			}
-
+			
 		}
-
 		consistency = (consistency) / (getWeightSum());
 
 		return consistency;

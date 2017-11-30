@@ -16,7 +16,7 @@ public class Article {
 			try {
 				tmp = article.getString(key);
 				
-				if ( !key.equals("article_number") && !key.equals("category") && !key.equals("categorycode") && tmp != null && !tmp.equals("")) {
+				if ( !key.equals("article_number") && !key.equals("category") && !key.equals("categorycode") && tmp != null) {
 					this.specs.add(new Spec(key, tmp));
 				}
 				

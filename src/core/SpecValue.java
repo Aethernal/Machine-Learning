@@ -20,7 +20,7 @@ public class SpecValue {
 	}
 
 	public void setWeight(double weight) {
-		this.weight = Math.max(Config.weight_modifier,Math.min(1, weight));
+		this.weight = Math.max(Config.weight_modifier,weight);
 	}
 
 	public JSONObject toJSON(){

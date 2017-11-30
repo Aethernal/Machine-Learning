@@ -17,7 +17,7 @@ public class Launcher {
 
 	public static void main(String args[]) {
 		engine = new MatchEngine();
-		
+
 		if (args.length > 1) {
 			switch (args[0]) {
 			case "train":
@@ -31,14 +31,14 @@ public class Launcher {
 				break;
 			}
 		} else {
-			
+
 			if (args.length == 1 && args[0].equals("help")) {
 				help();
 			} else {
 				System.err.println("Missing arguments ! < test | train > <file>");
 			}
 		}
-		
+
 		engine.saveData();
 	}
 
@@ -51,18 +51,18 @@ public class Launcher {
 		return null;
 	}
 
-	private static JSONArray readJSON(File file){
+	private static JSONArray readJSON(File file) {
 		BufferedReader reader;
 		try {
 			reader = new BufferedReader(new FileReader(file));
 			String json = "";
 			String tmp;
-			while((tmp = reader.readLine()) != null){
+			while ((tmp = reader.readLine()) != null) {
 				json += tmp;
 			}
 			reader.close();
 			JSONArray data = new JSONObject(json).getJSONArray("data");
-			
+
 			return data;
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
@@ -70,15 +70,15 @@ public class Launcher {
 		}
 		return null;
 	}
-	
+
 	private static void train(String path) {
 		File file;
 		if ((file = checkFile(path)) != null) {
 			JSONArray data = readJSON(file);
 			JSONObject article_json;
-			for(int i = 0; i < data.length(); i++){
-				if(i%100==99)
-				System.out.println("learning from item n° " + (i + 1) +" of " + data.length());
+			for (int i = 0; i < data.length(); i++) {
+				if (i % 100 == 99)
+					System.out.println("learning from item n° " + (i + 1) + " of " + data.length());
 				article_json = data.getJSONObject(i);
 				Article article = new Article(article_json);
 				engine.addDataSet(article, article_json.getString("category"));
@@ -94,52 +94,58 @@ public class Launcher {
 			double correct;
 			do {
 				correct = 0.0;
-				for(int i = 0; i < data.length(); i++){
+				for (int i = 0; i < data.length(); i++) {
 					article_json = data.getJSONObject(i);
 					Article article = new Article(article_json);
 					Tag best = engine.match(article);
-					if(best.getName().equals(article_json.getString("category"))){
+					if (best.getName().equals(article_json.getString("category"))) {
 						correct++;
 					} else {
-						//show error
+						// show error
 						Tag correct_tag = engine.getTag(article_json.getString("category"));
-//						System.out.println("best tag found " + best.getName() + " " + best.getConsistency(article) + " correct was " + article_json.getString("category") + " " + correct_tag.getConsistency(article) +"" );
-						
-//						showTagConsistency(best, correct_tag, article);
-//						showTagConsistency(correct_tag, article);
-						
+						// System.out.println("best tag found " + best.getName()
+						// + " " + best.getConsistency(article) + " correct was
+						// " + article_json.getString("category") + " " +
+						// correct_tag.getConsistency(article) +"" );
+
+						// showTagConsistency(best, correct_tag, article);
+						// showTagConsistency(correct_tag, article);
+
 						correct_tag.updateTag(article);
 						best.dropArticle(article);
-						
+
 					}
-					
-					if(i%5000==4999)
-						System.out.println("matched item n° " + (i + 1) +" of " + data.length());
-					
-					
+
+					if (i % 5000 == 4999)
+						System.out.println("matched item n° " + (i + 1) + " of " + data.length());
+
 				}
-				System.out.println("Number of correct match " + correct + " of " + data.length() +" | " + (correct / data.length() * 100.0) + "%");
+				System.out.println("Number of correct match " + correct + " of " + data.length() + " | "
+						+ (correct / data.length() * 100.0) + "%");
 			} while ((correct / data.length() * 100.0) < 90);
 		}
 	}
 
-	private static void showTagConsistency(Tag t1, Tag t2, Article article){
+	private static void showTagConsistency(Tag t1, Tag t2, Article article) {
 		DecimalFormat format = new DecimalFormat("#0.00");
 		System.out.println(t1.getName());
-		for(Spec s : article.getSpecs()){
-			if(t1.getCriteria(s.getName()) != null){
+		for (Spec s : article.getSpecs()) {
+			if (t1.getCriteria(s.getName()) != null) {
 				double t1_crit_weight = t1.getCriteria(s.getName()).getWeight() / t1.getWeightSum() * 100;
 				double t2_crit_weight = t2.getCriteria(s.getName()).getWeight() / t2.getWeightSum() * 100;
 				double t1_value_weight = t1.getCriteria(s.getName()).getValueConsistency(s.getValue()) * 100;
 				double t2_value_weight = t2.getCriteria(s.getName()).getValueConsistency(s.getValue()) * 100;
-				
-				System.out.println("\t"+s.getName() + " : " + format.format(t1_crit_weight) +"%" + " VS " + format.format(t2_crit_weight) +"% ");
-				System.out.println("\tResult: " + format.format(t1_crit_weight * (t1_value_weight / 100)) + " VS " + format.format(t2_crit_weight * (t2_value_weight / 100)));
-				System.out.println("\t\t"+s.getValue() + " : " + format.format(t1_value_weight) +"%" + " VS " + format.format(t2_value_weight) +"%");
+
+				System.out.println("\t" + s.getName() + " : " + format.format(t1_crit_weight) + "%" + " VS "
+						+ format.format(t2_crit_weight) + "% ");
+				System.out.println("\tResult: " + format.format(t1_crit_weight * (t1_value_weight / 100)) + " VS "
+						+ format.format(t2_crit_weight * (t2_value_weight / 100)));
+				System.out.println("\t\t" + s.getValue() + " : " + format.format(t1_value_weight) + "%" + " VS "
+						+ format.format(t2_value_weight) + "%");
 			}
 		}
 	}
-	
+
 	private static void help() {
 		System.out.println("-- Article Category Matcher --");
 		System.out.println("Action: ");
@@ -147,7 +153,8 @@ public class Launcher {
 		System.out.println("test <file>: output a json with the category for the json file given as argument");
 		System.out.println("\t the file need to be an array of JSON object");
 		System.out.println("train <file>: add the file values to the program to train it to get good values");
-		System.out.println("\t the file need to be an array of JSONObject containing a category attribute and a JSONObject containing attribute specs");
+		System.out.println(
+				"\t the file need to be an array of JSONObject containing a category attribute and a JSONObject containing attribute specs");
 	}
 
 }

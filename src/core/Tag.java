@@ -60,35 +60,28 @@ public class Tag {
 
 	public void dropArticle(Article article) {
 		for (Spec s : article.getSpecs()) {
-			dropSpec(s);
+			errodeCrit(s.getName());
+			errodeValue(s.getName(),s.getValue());
 		}
 	}
 
-	public void dropSpec(Spec s) {
-		Criteria crit = getCriteria(s.getName());
+	public void errodeValue(String crit_name,String value) {
+		Criteria crit = getCriteria(crit_name);
 		if (crit != null) {
-			double delta = 1;
-			if (crit.getWeight() / getWeightSum() <= 0.3) {
-				delta = Config.weight_modifier / 10; 
-			} else if (crit.getWeight() / getWeightSum() <= 0.7) {
-				delta = Config.weight_modifier / 10 * 2.5;
-			} else {
-				delta = Config.weight_modifier / 10 * 5; 
-			}
-			crit.setWeight(crit.getWeight() - delta);
-			crit.dropValue(s.getValue());
+			crit.errodeValue(value);
 		}
 	}
 	
-	public void dropSpec(Criteria crit) {
+	public void errodeCrit(String name) {
+		Criteria crit = getCriteria(name);
 		if (crit != null) {
 			double delta = 1;
 			if (crit.getWeight() / getWeightSum() <= 0.3) {
-				delta = Config.weight_modifier / 10; 
+				delta = Config.weight_modifier / 100; 
 			} else if (crit.getWeight() / getWeightSum() <= 0.7) {
-				delta = Config.weight_modifier / 10 * 2.5; 
+				delta = Config.weight_modifier / 100 * 2.5; 
 			} else {
-				delta = Config.weight_modifier / 10 * 5; 
+				delta = Config.weight_modifier / 100 * 5; 
 			}
 			crit.setWeight(crit.getWeight() - delta);
 		}
@@ -120,7 +113,7 @@ public class Tag {
 		
 		//erroding unused criteria
 		for (Criteria t : unused) {
-			dropSpec(t);
+			errodeCrit(t.getName());
 		}
 
 	}
@@ -132,16 +125,15 @@ public class Tag {
 		for (Spec s : article.getSpecs()) {
 
 			if ((c = getCriteria(s.getName())) != null) {
-				valueConsistency += c.getValueConsistency(s.getValue());
+				valueConsistency = c.getValueConsistency(s.getValue());
 				if(valueConsistency != 0){
 					consistency += c.getWeight()  * (valueConsistency);
 				}
 			}
 			
 		}
-		consistency = (consistency) / (getWeightSum());
-
-		return consistency;
+		
+		return (consistency) / (getWeightSum());
 	}
 
 	public List<Criteria> getCrits() {

@@ -65,7 +65,7 @@ public class Criteria {
 		}
 	}
 
-	public void dropValue(String value){
+	public void errodeValue(String value){
 		SpecValue v = getSpecValue(value);
 		if(v != null){
 			double delta = 1;

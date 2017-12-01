@@ -122,7 +122,7 @@ public class Launcher {
 				}
 				System.out.println("Number of correct match " + correct + " of " + data.length() + " | "
 						+ (correct / data.length() * 100.0) + "%");
-			} while ((correct / data.length() * 100.0) < 90);
+			} while ((correct / data.length() * 100.0) < 95);
 		}
 	}
 
